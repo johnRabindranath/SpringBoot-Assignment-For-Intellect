@@ -205,12 +205,50 @@ public class UsersController {
 	 * Delete the existing user based on userid Do not delete the record only
 	 * deactivate the user
 	 */
-	@DeleteMapping("/deleteUser")
+	@PutMapping("/deleteUser")
 	public String deleteUser(@RequestParam String id) {
+
+		esclient = connectESClient();
+		BulkRequestBuilder bulkRequests = esclient.prepareBulk();
+		String userMessage = "";
+		try {
+
+			SearchResponse response = esclient.prepareSearch("users").setTypes("user")
+					.setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(QueryBuilders.matchQuery("_id", id))
+					.setSize(500).setExplain(true).get();
+			SearchHits hitsdata = response.getHits();
+			System.out.println("Result" + hitsdata.getTotalHits());
+			if (hitsdata.getTotalHits() != 0) {
+				for (SearchHit searchHit : hitsdata) {
+					User userData = mapper.readValue(searchHit.getSourceAsString(), User.class);
+					if (userData != null) {
+						userData.setIsActive(false);
+						String stringifiedJson = mapper.writeValueAsString(userData);
+						bulkRequests.add(esclient.prepareIndex("users", "user", String.valueOf(id))
+								.setSource(stringifiedJson, XContentType.JSON));
+						if (bulkRequests.request().requests().size() != 0) {
+							BulkResponse bulkResponse = bulkRequests.execute().actionGet();
+							if (bulkResponse.getItems() != null) {
+								userMessage = "Is Active  flag is updated to false";
+							} else if (bulkResponse.hasFailures()) {
+								userMessage = "Is Active flag is not updated to false";
+
+							}
+						}
+
+					}
+
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		return elasticSearchHost;
 
 	}
+
 
 	/**
 	 * Get the users whose birthdayFails in current month
