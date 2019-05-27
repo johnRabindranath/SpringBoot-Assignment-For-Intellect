@@ -1,0 +1,32 @@
+{
+  "users" : {
+    "mappings" : {
+      "user" : {
+        "properties" : {
+          "birthDate" : {
+            "type" : "date",
+            "format" : "dd-MM-yyyy"
+          },
+          "email" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "fName" : {
+            "type" : "text"
+          },
+          "lName" : {
+            "type" : "text"
+          },
+          "pinCode" : {
+            "type" : "long"
+          }
+        }
+      }
+    }
+  }
+}
