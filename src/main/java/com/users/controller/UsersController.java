@@ -159,14 +159,14 @@ public class UsersController {
 	 * @return
 	 */
 	@PutMapping("/updateUser")
-	public String updateUser(@RequestBody User user, @RequestParam String id) {
+	public String updateUser(@RequestBody User user) {
 		esclient = connectESClient();
 		BulkRequestBuilder bulkRequests = esclient.prepareBulk();
 		String userMessage = "";
 		try {
 
 			SearchResponse response = esclient.prepareSearch("users").setTypes("user")
-					.setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(QueryBuilders.matchQuery("_id", id))
+					.setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(QueryBuilders.matchQuery("_id", user.getId()))
 					.setSize(500).setExplain(true).get();
 			SearchHits hitsdata = response.getHits();
 			System.out.println("Result" + hitsdata.getTotalHits());
@@ -177,7 +177,7 @@ public class UsersController {
 						userData.setPinCode(user.getPinCode());
 						userData.setBirthDate(user.getBirthDate());
 						String stringifiedJson = mapper.writeValueAsString(userData);
-						bulkRequests.add(esclient.prepareIndex("users", "user", String.valueOf(id))
+						bulkRequests.add(esclient.prepareIndex("users", "user", String.valueOf(user.getId()))
 								.setSource(stringifiedJson, XContentType.JSON));
 						if (bulkRequests.request().requests().size() != 0) {
 							BulkResponse bulkResponse = bulkRequests.execute().actionGet();
@@ -200,7 +200,6 @@ public class UsersController {
 
 		return userMessage;
 	}
-
 	/**
 	 * Delete the existing user based on userid Do not delete the record only
 	 * deactivate the user
