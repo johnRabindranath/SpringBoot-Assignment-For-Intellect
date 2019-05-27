@@ -206,7 +206,7 @@ public class UsersController {
 	 * deactivate the user
 	 */
 	@PutMapping("/deleteUser")
-	public String deleteUser(@RequestParam String id) {
+	public String deleteUser(@RequestBody User user) {
 
 		esclient = connectESClient();
 		BulkRequestBuilder bulkRequests = esclient.prepareBulk();
@@ -214,8 +214,8 @@ public class UsersController {
 		try {
 
 			SearchResponse response = esclient.prepareSearch("users").setTypes("user")
-					.setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(QueryBuilders.matchQuery("_id", id))
-					.setSize(500).setExplain(true).get();
+					.setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+					.setQuery(QueryBuilders.matchQuery("_id", user.getId())).setSize(500).setExplain(true).get();
 			SearchHits hitsdata = response.getHits();
 			System.out.println("Result" + hitsdata.getTotalHits());
 			if (hitsdata.getTotalHits() != 0) {
@@ -224,7 +224,7 @@ public class UsersController {
 					if (userData != null) {
 						userData.setIsActive(false);
 						String stringifiedJson = mapper.writeValueAsString(userData);
-						bulkRequests.add(esclient.prepareIndex("users", "user", String.valueOf(id))
+						bulkRequests.add(esclient.prepareIndex("users", "user", String.valueOf(user.getId()))
 								.setSource(stringifiedJson, XContentType.JSON));
 						if (bulkRequests.request().requests().size() != 0) {
 							BulkResponse bulkResponse = bulkRequests.execute().actionGet();
@@ -245,10 +245,9 @@ public class UsersController {
 			e.printStackTrace();
 		}
 
-		return elasticSearchHost;
+		return userMessage;
 
 	}
-
 
 	/**
 	 * Get the users whose birthdayFails in current month
