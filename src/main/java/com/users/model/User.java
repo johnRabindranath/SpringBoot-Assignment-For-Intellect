@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public class User {
 	private static final long serialVersionUID = 1L;
 
+	private int id;
+
 	private String fName;
 
 	private String lName;
@@ -16,6 +18,14 @@ public class User {
 	private int pinCode;
 
 	private Boolean isActive;
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy", timezone = "IST")
 	private Date birthDate;
