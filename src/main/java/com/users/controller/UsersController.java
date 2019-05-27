@@ -129,7 +129,9 @@ public class UsersController {
 				userDatas.setlName(user.getlName());
 				userDatas.setEmail(user.getEmail());
 				userDatas.setPinCode(user.getPinCode());
+				if (user.getBirthDate().before(todayDate)) {
 				userDatas.setBirthDate(user.getBirthDate());
+			          }
 				String stringifiedJson = mapper.writeValueAsString(userDatas);
 				bulkRequests.add(esclient.prepareIndex("users", "user", String.valueOf(1)).setSource(stringifiedJson,
 						XContentType.JSON));
